@@ -32,7 +32,7 @@
         <form>
             <div class="mb-8">
                 <input
-                    class="w-full border border-slate-600 p-2 rounded-lg bg-gray-600 text-gray-200"
+                    class="w-full border border-slate-600 p-2 rounded-lg bg-gray-600 text-gray-200 text-sm"
                     type="text"
                     id="username"
                     name="username"
@@ -43,7 +43,7 @@
             </div>
             <div class="mb-8">
                 <input
-                    class="w-full border border-slate-600 p-2 rounded-lg bg-gray-600 text-gray-200"
+                    class="w-full border border-slate-600 p-2 rounded-lg bg-gray-600 text-gray-200 text-sm"
                     type="password"
                     id="password"
                     name="password"
