@@ -6,6 +6,7 @@
 use const_format::formatcp;
 use reqwest::blocking::Client;
 use serde_json::json;
+use tauri::Manager;
 use tauri::utils::html::parse;
 use tauri::http::header::CONTENT_TYPE;
 
@@ -16,6 +17,10 @@ const LOGIN_URL: &str = formatcp!("{}Authentication/Index", BASE_URL);
 
 struct Session(Client);
 
+#[tauri::command]
+fn credit() {
+    open::that("https://github.com/deadManAlive").unwrap_or(());
+}
 
 #[tauri::command]
 fn login(username: &str, password: &str, client: tauri::State<Session>) -> String {
@@ -52,8 +57,16 @@ fn login(username: &str, password: &str, client: tauri::State<Session>) -> Strin
 
 fn main() {
   tauri::Builder::default()
+    .setup(|app| {
+        #[cfg(debug_assertions)] {
+            let window = app.get_window("main").unwrap();
+            window.open_devtools();
+            window.close_devtools();
+        }
+        Ok(())
+    })
     .manage(Session(Client::new()))
-    .invoke_handler(tauri::generate_handler![login])
+    .invoke_handler(tauri::generate_handler![credit, login])
     .run(tauri::generate_context!())
     .expect("error while running tauri application");
 }
