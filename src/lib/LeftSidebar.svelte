@@ -5,10 +5,21 @@
 
     let username = "";
     let password = "";
-    let status = "status shown here..."
+    let status = "..."
 
     async function login() {
-        status = await invoke('login', {username, password});
+        let login_result = await invoke('login', {username, password});
+
+        if (login_result === "Error") {
+            status = "Connection error!";
+        }
+        else if(login_result === "Empty") {
+            status = "Server error!";
+        }
+        else {
+            status = login_result;
+        }
+
         username = "";
         password = "";
     }
@@ -16,14 +27,14 @@
 
 <div class="flex min-h-screen">
     <div class="w-64 bg-gray-800 p-4">
-        <p class="text-center text-3xl font-thin text-yellow-400">Auto<span class="font-medium">SIAK</span></p>
+        <p class="text-center text-3xl font-thin text-yellow-400 select-none">Auto<span class="font-medium">SIAK</span></p>
         <p class="pb-10 
                   text-center
                   font-mono
                   text-base
                   font-thin
                   tracking-tight
-                  text-gray-400">by <span class="cursor-pointer
+                  text-gray-400 select-none">by <span class="cursor-pointer
                                                    transition
                                                    ease-in-out
                                                    hover:text-yellow-400
@@ -61,8 +72,10 @@
                 </button>
             </div>
         </form>
-        <p class="text-center text-lg font-medium text-gray-200 py-10">Login status:</p>
-        <p class="text-center text-sm font-normal text-gray-200">{ status }</p>
+        <div class="select-none">
+            <p class="text-center text-lg font-medium text-gray-200 py-10">Login status:</p>
+            <p class="text-center text-sm font-normal text-gray-200">{ status }</p>
+        </div>
     </div>
     <div class="w-full bg-slate-600 p-4">
     </div>

@@ -3,6 +3,8 @@
   windows_subsystem = "windows"
 )]
 
+use std::sync::Arc;
+
 use const_format::formatcp;
 use reqwest::{blocking::Client, cookie::Jar};
 use serde_json::json;
@@ -13,13 +15,14 @@ const LOGIN_URL: &str = formatcp!("{}Authentication/Index", BASE_URL);
 const CHANGEROLE_URL: &str = formatcp!("{}Authentication/ChangeRole", BASE_URL);
 // const SUMMARY_URL: &str = formatcp!("{}Authentication/Summary", BASE_URL);
 
-struct Session(Client);
+struct Session(Client, Arc<Jar>);
 
 #[tauri::command]
 fn credit() {
     open::that("https://github.com/deadManAlive").unwrap_or(());
 }
 
+//TODO: clear cookie, or else this is useless
 #[tauri::command]
 fn login(username: &str, password: &str, client: tauri::State<Session>) -> String {
     let payload = json!({
@@ -75,7 +78,7 @@ fn login(username: &str, password: &str, client: tauri::State<Session>) -> Strin
 // }
 
 fn main() {
-    let cookie_jar = Jar::default();
+    let cookie_jar = Arc::new(Jar::default());
 
     tauri::Builder::default()
         .setup(|app| {
@@ -88,8 +91,9 @@ fn main() {
         })
         .manage(Session(Client::builder()
                                 .cookie_store(true)
-                                .cookie_provider(cookie_jar.into())
-                                .build().unwrap()))
+                                .cookie_provider(Arc::clone(&cookie_jar))
+                                .build().unwrap()
+                            , Arc::clone(&cookie_jar)))
         .invoke_handler(tauri::generate_handler![credit, login])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
