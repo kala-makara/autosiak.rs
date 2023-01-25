@@ -63,7 +63,6 @@
 				id="username"
 				name="username"
 				placeholder="username"
-				autocomplete="off"
 				bind:value={username}
 			/>
 		</div>

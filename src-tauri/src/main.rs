@@ -67,7 +67,7 @@ async fn login(
         Err(_) => Err("Error".to_string()),
     }
 }
-
+// TODO: deal with lifetime bullshits when divide the login subroutine chain
 fn main() {
     let cookie_store = CookieStore::default();
     let cookie_store = CookieStoreMutex::new(cookie_store);
