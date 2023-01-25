@@ -6,78 +6,67 @@
 use std::sync::Arc;
 
 use const_format::formatcp;
-use reqwest::blocking::Client;
+use reqwest::Client;
 use reqwest_cookie_store::{CookieStore, CookieStoreMutex};
 use serde_json::json;
 use tauri::{utils::html::parse, Manager};
-use std::time::Duration;
+// use std::time::Duration;
 
 const BASE_URL: &str = "https://academic.ui.ac.id/main/";
 const LOGIN_URL: &str = formatcp!("{}Authentication/Index", BASE_URL);
 const CHANGEROLE_URL: &str = formatcp!("{}Authentication/ChangeRole", BASE_URL);
 // const SUMMARY_URL: &str = formatcp!("{}Authentication/Summary", BASE_URL);
 
-struct Session(Client, Arc<CookieStoreMutex>);
+struct Session {
+    client: Client,
+    cookies: Arc<CookieStoreMutex>,
+}
 
 #[tauri::command]
 fn credit() {
     open::that("https://github.com/deadManAlive").unwrap_or(());
 }
 
-//TODO: clear cookie, or else this is useless
+/// # Login Unit
+/// How this works:
+/// 1. Clear cookies.
+/// 2. POST form payload.
+/// 3. Match response:
+///     * success: parse for login err
+///         * no login err:
+///             1. get change_role
+///             2. return `Ok(Some(username))`
+///         * login err: return `Ok(None)` -> panic/stop
+///     * failed: return `Err(())` -> sign for looping
 #[tauri::command]
-fn login(username: &str, password: &str, client: tauri::State<Session>) -> String {
-    let mut store = client.1.lock().unwrap();
-
-    println!("cookie: {:#?}", store);
+async fn login(
+    username: &str,
+    password: &str,
+    state: tauri::State<'_, Session>,
+) -> Result<String, String> {
+    state.cookies.lock().unwrap().clear();
 
     let payload = json!({
         "u": username,
         "p": password,
     });
 
-    store.clear();
-
-    let request = client.0.post(LOGIN_URL).form(&payload).timeout(Duration::new(5, 0));
-
-    println!("Acessing {} with {:#?}", LOGIN_URL, request);
-
-    let result = request.send();
-
-    println!("Responded with {:#?}", result);
-
-    match result {
-        Ok(res) => match res.text() {
-            Ok(content) => {
-                let html = parse(content);
-                match html.select_first("p.error") {
-                    Ok(error_node_reference) => error_node_reference.text_contents(),
-                    Err(_) => {
-                        let changerole = client.0.get(CHANGEROLE_URL).timeout(Duration::new(5, 0));
-
-                        println!("Change role request: {:#?}", changerole);
-
-                        let changerole_result = changerole.send();
-
-                        if let Ok(resp) = changerole_result {
-                            println!("change role response: {}", resp.text().unwrap());
-                        }
-
-                        username.to_string()
-                    }
+    match state.client.post(LOGIN_URL).form(&payload).send().await {
+        Ok(res) => {
+            println!("res: {:#?}", res);
+            if res.status().is_success() {
+                let content = res.text().await;
+                match content {
+                    Ok(text) => Ok(text),
+                    Err(_) => Err("Empty".to_string()),
                 }
+            } else {
+                Err("Error".to_string())
             }
-            Err(_) => String::from("Empty"),
-        },
-        Err(_) => String::from("Error"),
+        }
+        Err(_) => Err("Error".to_string()),
     }
 }
-
-// #[tauri::command]
-// fn get_user_detail(query: &str, client: tauri::State<Session>) {
-//     let request = client.0
-//         .get()
-// }
 
 fn main() {
     let cookie_store = CookieStore::default();
@@ -94,14 +83,14 @@ fn main() {
             }
             Ok(())
         })
-        .manage(Session(
-            Client::builder()
+        .manage(Session {
+            client: Client::builder()
                 .cookie_store(true)
                 .cookie_provider(Arc::clone(&cookie_jar))
                 .build()
                 .unwrap(),
-            Arc::clone(&cookie_jar),
-        ))
+            cookies: Arc::clone(&cookie_jar),
+        })
         .invoke_handler(tauri::generate_handler![credit, login])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
