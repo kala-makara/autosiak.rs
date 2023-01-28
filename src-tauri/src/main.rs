@@ -9,8 +9,8 @@ use const_format::formatcp;
 use reqwest::Client;
 use reqwest_cookie_store::{CookieStore, CookieStoreMutex};
 use serde_json::json;
-use tauri::Manager;
 use tauri::utils::html::parse;
+use tauri::Manager;
 
 const BASE_URL: &str = "https://academic.ui.ac.id/main";
 const LOGIN_URL: &str = formatcp!("{}/Authentication/Index", BASE_URL);
@@ -24,9 +24,8 @@ struct Session {
 }
 
 impl Session {
-    fn new(cookie_store: Arc<CookieStoreMutex>) -> Session
-    {
-        Session { 
+    fn new(cookie_store: Arc<CookieStoreMutex>) -> Session {
+        Session {
             client: Client::builder()
                 .cookie_store(true)
                 .cookie_provider(Arc::clone(&cookie_store))
@@ -36,9 +35,9 @@ impl Session {
         }
     }
 
-    // fn clear_cookies(&self) {
-    //     self.cookies.lock().unwrap().clear();
-    // }
+    fn clear_cookies(&self) {
+        self.cookies.lock().unwrap().clear();
+    }
 }
 
 #[tauri::command]
@@ -63,7 +62,8 @@ async fn login(
     password: &str,
     state: tauri::State<'_, Session>,
 ) -> Result<String, String> {
-    state.cookies.lock().unwrap().clear();
+    // state.cookies.lock().unwrap().clear();
+    state.clear_cookies();
 
     let payload = json!({
         "u": username,
@@ -72,7 +72,6 @@ async fn login(
 
     match state.client.post(LOGIN_URL).form(&payload).send().await {
         Ok(res) => {
-            println!("res: {:#?}", res);
             if res.status().is_success() {
                 let content = res.text().await;
                 match content {
@@ -80,10 +79,7 @@ async fn login(
                         let is_error = {
                             let login_resp_page = parse(text);
                             // println!("error? {:#?}", login_resp_page.select_first("p.error"));
-                            match login_resp_page.select_first("p.error") {
-                                Ok(_) => true,
-                                Err(_) => false,
-                            }
+                            login_resp_page.select_first("p.error").is_ok()
                         }; // TODO: RTFM async vs. threading
 
                         if is_error {
@@ -92,26 +88,36 @@ async fn login(
 
                         match state.client.get(CHANGEROLE_URL).send().await {
                             Ok(crres) => {
-                                let crcontent = crres.text().await.unwrap_or("Empty".to_string());
-                                Ok(crcontent) 
-                            },
+                                if crres.url().path().contains("Welcome") {
+                                    Ok(username.to_string())
+                                }
+                                else {
+                                    Ok("Failed".to_string())
+                                }
+                            }
                             Err(err) => {
                                 println!("{:?}", err);
-                                Err("Error".to_string())
-                            },
+                                Ok("Error".to_string())
+                            }
                         }
                         // Ok(text)
-                    },
-                    Err(_) => Err("Empty".to_string()),
+                    }
+                    Err(_) => Ok("Empty".to_string()),
                 }
             } else {
-                Err("Error".to_string())
+                Ok("Error".to_string())
             }
         }
-        Err(_) => Err("Error".to_string()),
+        Err(_) => Ok("Error".to_string()),
     }
 }
-// TODO: deal with lifetime bullshits when divide the login subroutine chain
+
+#[tauri::command]
+fn logout(state: tauri::State<Session>) {
+    state.clear_cookies();
+    println!("cookies: {:#?}", state.cookies);
+}
+
 fn main() {
     let cookie_store = CookieStore::default();
     let cookie_store = CookieStoreMutex::new(cookie_store);
@@ -128,7 +134,7 @@ fn main() {
             Ok(())
         })
         .manage(Session::new(Arc::clone(&cookie_jar)))
-        .invoke_handler(tauri::generate_handler![credit, login])
+        .invoke_handler(tauri::generate_handler![credit, login, logout])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }

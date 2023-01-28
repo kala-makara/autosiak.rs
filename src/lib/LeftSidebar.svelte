@@ -6,9 +6,14 @@
 	let password = '';
 	let status = '...';
 
+    let puname = '';
+    let is_logged_in = false;
+
 	async function login() {
 		let login_result: string = await invoke('login', { username, password });
         console.log(login_result);
+
+        is_logged_in = false;
 
 		if (login_result === 'Error') {
 			status = 'Connection error!';
@@ -17,12 +22,20 @@
 		} else if (login_result === 'Failed') {
             status = 'Login Failed!';
         } else {
-			status = username;
+			puname = username;
+            is_logged_in = true
 		}
 
 		username = '';
 		password = '';
 	}
+
+    async function logout() {
+        await invoke('logout');
+        status = '...';
+        puname = '';
+        is_logged_in = false;
+    }
 
 	function defer() {
 		alert(
@@ -113,6 +126,16 @@
     </div>
 	<div class="select-none">
 		<p class="text-center text-lg font-medium text-gray-200 py-10">Login status:</p>
-		<p class="text-center text-sm font-normal text-gray-200">{status}</p>
+		<p class="text-center text-sm font-normal text-gray-200">{is_logged_in?puname:status}</p>
 	</div>
+    <div class="pt-6 text-center">
+        <button
+            data-tooltip-target="tooltip-default"
+            class="bg-red-500 text-gray-200 font-medium py-2 px-4 rounded-lg hover:bg-red-600 disabled:opacity-50 disabled:hover:bg-red-500"
+            disabled='{!is_logged_in}'
+            on:click={logout}
+        >
+            Log Out
+        </button>
+    </div>
 </div>
