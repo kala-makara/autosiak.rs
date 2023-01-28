@@ -13,7 +13,7 @@ use tauri::Manager;
 
 const BASE_URL: &str = "https://academic.ui.ac.id/main";
 const LOGIN_URL: &str = formatcp!("{}/Authentication/Index", BASE_URL);
-// const CHANGEROLE_URL: &str = formatcp!("{}/Authentication/ChangeRole", BASE_URL);
+const CHANGEROLE_URL: &str = formatcp!("{}/Authentication/ChangeRole", BASE_URL);
 // const SCHEDULE_URL: &str = formatcp!("{}/Schedule/Index", BASE_URL);
 // const SUMMARY_URL: &str = formatcp!("{}Authentication/Summary", BASE_URL);
 
@@ -57,7 +57,19 @@ async fn login(
             if res.status().is_success() {
                 let content = res.text().await;
                 match content {
-                    Ok(text) => Ok(text),
+                    Ok(_) => {
+                        match state.client.get(CHANGEROLE_URL).send().await {
+                            Ok(crres) => {
+                                let crcontent = crres.text().await.unwrap_or("Empty".to_string());
+                                Ok(crcontent) 
+                            },
+                            Err(err) => {
+                                println!("{:?}", err);
+                                Err("Error".to_string())
+                            },
+                        }
+                        // Ok(text)
+                    },
                     Err(_) => Err("Empty".to_string()),
                 }
             } else {

@@ -15,7 +15,7 @@
 		} else if (login_result === 'Empty') {
 			status = 'Server error!';
 		} else {
-			status = login_result;
+			status = username;
 		}
 
 		username = '';
