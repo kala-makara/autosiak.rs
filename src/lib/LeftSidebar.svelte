@@ -8,6 +8,7 @@
 
 	async function login() {
 		let login_result: string = await invoke('login', { username, password });
+        console.log(login_result);
 
 		if (login_result === 'Error') {
 			status = 'Connection error!';
@@ -27,6 +28,15 @@
 		);
         status = "DEFER MODE"
 	}
+
+    function is_cred_empty(uname: string, pword: string): boolean {
+        if (uname === "" || pword === "") {
+            return true;
+        }
+        else {
+            return false;
+        }
+    }
 </script>
 
 <div class="w-64 bg-gray-800 p-4">
@@ -64,6 +74,7 @@
 				name="username"
 				placeholder="username"
 				bind:value={username}
+                required
 			/>
 		</div>
 		<div class="mb-8">
@@ -75,11 +86,13 @@
 				placeholder="password"
 				autocomplete="off"
 				bind:value={password}
+                required
 			/>
 		</div>
 		<div class="pb-2 text-center">
 			<button
-				class="bg-blue-500 text-gray-200 font-medium py-2 px-4 rounded-lg hover:bg-blue-600"
+				class="bg-blue-500 text-gray-200 font-medium py-2 px-4 rounded-lg hover:bg-blue-600 disabled:opacity-50 disabled:hover:bg-blue-500"
+                disabled='{is_cred_empty(username, password)}'
 				on:click={login}
 			>
 				Log In
@@ -89,7 +102,8 @@
     <div class="pt-2 pb-6 text-center">
         <button
             data-tooltip-target="tooltip-default"
-            class="bg-red-500 text-gray-200 font-medium py-2 px-4 rounded-lg hover:bg-red-600"
+            class="bg-red-500 text-gray-200 font-medium py-2 px-4 rounded-lg hover:bg-red-600 disabled:opacity-50 disabled:hover:bg-red-500"
+            disabled='{is_cred_empty(username, password)}'
             on:click={defer}
         >
             Defer

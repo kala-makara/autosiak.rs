@@ -9,12 +9,12 @@ use const_format::formatcp;
 use reqwest::Client;
 use reqwest_cookie_store::{CookieStore, CookieStoreMutex};
 use serde_json::json;
-use tauri::{utils::html::parse, Manager};
-// use std::time::Duration;
+use tauri::Manager;
 
-const BASE_URL: &str = "https://academic.ui.ac.id/main/";
-const LOGIN_URL: &str = formatcp!("{}Authentication/Index", BASE_URL);
-const CHANGEROLE_URL: &str = formatcp!("{}Authentication/ChangeRole", BASE_URL);
+const BASE_URL: &str = "https://academic.ui.ac.id/main";
+const LOGIN_URL: &str = formatcp!("{}/Authentication/Index", BASE_URL);
+// const CHANGEROLE_URL: &str = formatcp!("{}/Authentication/ChangeRole", BASE_URL);
+// const SCHEDULE_URL: &str = formatcp!("{}/Schedule/Index", BASE_URL);
 // const SUMMARY_URL: &str = formatcp!("{}Authentication/Summary", BASE_URL);
 
 struct Session {
