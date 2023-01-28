@@ -10,6 +10,7 @@ use reqwest::Client;
 use reqwest_cookie_store::{CookieStore, CookieStoreMutex};
 use serde_json::json;
 use tauri::Manager;
+use tauri::utils::html::parse;
 
 const BASE_URL: &str = "https://academic.ui.ac.id/main";
 const LOGIN_URL: &str = formatcp!("{}/Authentication/Index", BASE_URL);
@@ -20,6 +21,24 @@ const CHANGEROLE_URL: &str = formatcp!("{}/Authentication/ChangeRole", BASE_URL)
 struct Session {
     client: Client,
     cookies: Arc<CookieStoreMutex>,
+}
+
+impl Session {
+    fn new(cookie_store: Arc<CookieStoreMutex>) -> Session
+    {
+        Session { 
+            client: Client::builder()
+                .cookie_store(true)
+                .cookie_provider(Arc::clone(&cookie_store))
+                .build()
+                .unwrap(),
+            cookies: Arc::clone(&cookie_store),
+        }
+    }
+
+    // fn clear_cookies(&self) {
+    //     self.cookies.lock().unwrap().clear();
+    // }
 }
 
 #[tauri::command]
@@ -57,7 +76,20 @@ async fn login(
             if res.status().is_success() {
                 let content = res.text().await;
                 match content {
-                    Ok(_) => {
+                    Ok(text) => {
+                        let is_error = {
+                            let login_resp_page = parse(text);
+                            // println!("error? {:#?}", login_resp_page.select_first("p.error"));
+                            match login_resp_page.select_first("p.error") {
+                                Ok(_) => true,
+                                Err(_) => false,
+                            }
+                        }; // TODO: RTFM async vs. threading
+
+                        if is_error {
+                            return Ok("Failed".to_string());
+                        }
+
                         match state.client.get(CHANGEROLE_URL).send().await {
                             Ok(crres) => {
                                 let crcontent = crres.text().await.unwrap_or("Empty".to_string());
@@ -95,14 +127,7 @@ fn main() {
             }
             Ok(())
         })
-        .manage(Session {
-            client: Client::builder()
-                .cookie_store(true)
-                .cookie_provider(Arc::clone(&cookie_jar))
-                .build()
-                .unwrap(),
-            cookies: Arc::clone(&cookie_jar),
-        })
+        .manage(Session::new(Arc::clone(&cookie_jar)))
         .invoke_handler(tauri::generate_handler![credit, login])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

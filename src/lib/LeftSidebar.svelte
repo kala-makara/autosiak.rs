@@ -14,7 +14,9 @@
 			status = 'Connection error!';
 		} else if (login_result === 'Empty') {
 			status = 'Server error!';
-		} else {
+		} else if (login_result === 'Failed') {
+            status = 'Login Failed!';
+        } else {
 			status = username;
 		}
 
