@@ -61,8 +61,7 @@ async fn login(
     username: &str,
     password: &str,
     state: tauri::State<'_, Session>,
-) -> Result<String, String> {
-    // state.cookies.lock().unwrap().clear();
+) -> Result<String, ()> {
     state.clear_cookies();
 
     let payload = json!({
