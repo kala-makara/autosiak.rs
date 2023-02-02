@@ -13,7 +13,6 @@
         }
     }
     
-
 	function handleCheckboxChange(e: Event, index: number) {
 		checkboxes[index] = (e.target as HTMLInputElement).checked;
 		if (index % 2 === 0) {

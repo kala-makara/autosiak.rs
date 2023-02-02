@@ -11,21 +11,6 @@
     let is_logged_in = false;
 
 	async function login() {
-		// let login_result: string = await invoke('login', { username, password });
-        // console.log(login_result);
-
-        // is_logged_in = false;
-
-		// if (login_result === 'Error') {
-		// 	status = 'Connection error!';
-		// } else if (login_result === 'Empty') {
-		// 	status = 'Server error!';
-		// } else if (login_result === 'Failed') {
-        //     status = 'Login Failed!';
-        // } else {
-		// 	puname = username;
-        //     is_logged_in = true
-		// }
 
         await invoke('login', {username: username, password: password})
             .then((username) => {

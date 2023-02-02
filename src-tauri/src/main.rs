@@ -46,16 +46,6 @@ fn credit() {
 }
 
 /// # Login Unit
-/// How this works:
-/// 1. Clear cookies.
-/// 2. POST form payload.
-/// 3. Match response:
-///     * success: parse for login err
-///         * no login err:
-///             1. get change_role
-///             2. return `Ok(Some(username))`
-///         * login err: return `Ok(None)` -> panic/stop
-///     * failed: return `Err(())` -> sign for looping
 #[tauri::command]
 async fn login(
     username: &str,
