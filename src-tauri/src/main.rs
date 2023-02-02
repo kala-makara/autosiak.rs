@@ -45,13 +45,11 @@ fn credit() {
     open::that("https://github.com/deadManAlive").unwrap_or(());
 }
 
-/// # Login Unit
-#[tauri::command]
 async fn login(
     username: &str,
     password: &str,
-    state: tauri::State<'_, Session>,
-) -> Result<String, i32> {
+    state: &tauri::State<'_, Session>,
+) -> Result<i32, i32> {
     state.clear_cookies();
 
     let payload = json!({
@@ -77,9 +75,8 @@ async fn login(
                         match state.client.get(CHANGEROLE_URL).send().await {
                             Ok(crres) => {
                                 if crres.url().path().contains("Welcome") {
-                                    Ok(username.to_string())
-                                }
-                                else {
+                                    Ok(0)
+                                } else {
                                     Err(2) // Err 2: ChangeRole request failure
                                 }
                             }
@@ -95,6 +92,26 @@ async fn login(
             }
         }
         Err(_) => Err(6), // Err 6: fail to send request to login url
+    }
+}
+
+#[tauri::command]
+async fn main_login_handler(
+    username: &str,
+    password: &str,
+    state: tauri::State<'_, Session>,
+) -> Result<i32, i32> {
+    let state = &state;
+    loop {
+        match login(username, password, state).await {
+            Ok(val) => {
+                return Ok(val);
+            }
+            Err(1) => {
+                return Err(0); // Err: wrong uname/pword
+            }
+            Err(_) => (),
+        }
     }
 }
 
@@ -119,7 +136,7 @@ fn main() {
             Ok(())
         })
         .manage(Session::new(Arc::clone(&cookie_jar)))
-        .invoke_handler(tauri::generate_handler![credit, login, logout])
+        .invoke_handler(tauri::generate_handler![credit, logout, main_login_handler])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }

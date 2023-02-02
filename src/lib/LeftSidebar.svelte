@@ -5,20 +5,55 @@
 
 	let username = '';
 	let password = '';
-	let status = '...';
+	let status = '';
 
-    let puname = '';
+    let waiting = '';
+    let wdival: NodeJS.Timer | undefined;
+
+    function wait_start() {
+        wdival = setInterval(() => {
+            waiting += '.';
+            if (waiting.length > 3) {
+                waiting = '';
+            }
+        }, 800);
+    }
+
+    function wait_stop() {
+        clearInterval(wdival);
+    }
+
+    let cached_username = '';
+    let cached_password = '';
+
     let is_logged_in = false;
+    let is_error = false;
+    let is_waiting = false;
 
 	async function login() {
+        status = 'Waiting';
+        is_logged_in = false;
+        is_error = false;
+        is_waiting = true;
+        wait_start();
 
-        await invoke('login', {username: username, password: password})
-            .then((username) => {
-                puname = <string>username;
+        await invoke('main_login_handler', {username: username, password: password})
+            .then((val) => {
+                console.log(`success ${val}`);
+                cached_username = username;
+                cached_password = password;
                 is_logged_in = true;
+                status = '';
             })
             .catch((error) => {
-                status = `Log In Error (Code ${error})!`
+                cached_username = '';
+                cached_password = '';
+                status = `Wrong Password/Username!`
+                is_error = true;
+            })
+            .finally(() => {
+                wait_stop();
+                is_waiting = false;
             });
 
 		username = '';
@@ -27,8 +62,9 @@
 
     async function logout() {
         await invoke('logout');
-        status = '...';
-        puname = '';
+        status = '';
+        cached_username = '';
+        cached_password = '';
         is_logged_in = false;
     }
 
@@ -121,7 +157,15 @@
     </div>
 	<div class="select-none">
 		<p class="text-center text-lg font-medium text-gray-200 py-10">Login status:</p>
-		<p class="text-center text-sm font-normal text-gray-200">{is_logged_in?puname:status}</p>
+        {#if is_logged_in}
+		    <p class="text-center text-sm font-normal text-gray-200">{cached_username}</p>
+        {:else if is_error}
+            <p class="text-center text-sm font-semibold text-red-500">{status}</p>
+        {:else if is_waiting}
+		    <p class="text-center text-sm font-semibold text-yellow-100">{status + waiting}</p>
+        {:else}
+            <p class="text-center text-sm font-semibold text-yellow-100">...</p>
+        {/if}
 	</div>
     <div class="pt-6 text-center">
         <button
