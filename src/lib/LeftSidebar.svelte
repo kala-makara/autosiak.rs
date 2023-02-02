@@ -1,5 +1,6 @@
 <!-- left sidebar component -->
 <script lang="ts">
+	import { error } from '@sveltejs/kit';
 	import { invoke } from '@tauri-apps/api/tauri';
 
 	let username = '';
@@ -10,21 +11,30 @@
     let is_logged_in = false;
 
 	async function login() {
-		let login_result: string = await invoke('login', { username, password });
-        console.log(login_result);
+		// let login_result: string = await invoke('login', { username, password });
+        // console.log(login_result);
 
-        is_logged_in = false;
+        // is_logged_in = false;
 
-		if (login_result === 'Error') {
-			status = 'Connection error!';
-		} else if (login_result === 'Empty') {
-			status = 'Server error!';
-		} else if (login_result === 'Failed') {
-            status = 'Login Failed!';
-        } else {
-			puname = username;
-            is_logged_in = true
-		}
+		// if (login_result === 'Error') {
+		// 	status = 'Connection error!';
+		// } else if (login_result === 'Empty') {
+		// 	status = 'Server error!';
+		// } else if (login_result === 'Failed') {
+        //     status = 'Login Failed!';
+        // } else {
+		// 	puname = username;
+        //     is_logged_in = true
+		// }
+
+        await invoke('login', {username: username, password: password})
+            .then((username) => {
+                puname = <string>username;
+                is_logged_in = true;
+            })
+            .catch((error) => {
+                status = `Log In Error (Code ${error})!`
+            });
 
 		username = '';
 		password = '';

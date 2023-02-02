@@ -12,7 +12,7 @@
     }
 
     function clear() {
-        query_list = new Array<string>();;
+        query_list = new Array<string>();
     }
 </script>
 

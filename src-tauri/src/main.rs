@@ -61,7 +61,7 @@ async fn login(
     username: &str,
     password: &str,
     state: tauri::State<'_, Session>,
-) -> Result<String, ()> {
+) -> Result<String, i32> {
     state.clear_cookies();
 
     let payload = json!({
@@ -77,12 +77,11 @@ async fn login(
                     Ok(text) => {
                         let is_error = {
                             let login_resp_page = parse(text);
-                            // println!("error? {:#?}", login_resp_page.select_first("p.error"));
                             login_resp_page.select_first("p.error").is_ok()
                         }; // TODO: RTFM async vs. threading
 
                         if is_error {
-                            return Ok("Failed".to_string());
+                            return Err(1); // Err 1: Wrong Creds
                         }
 
                         match state.client.get(CHANGEROLE_URL).send().await {
@@ -91,30 +90,27 @@ async fn login(
                                     Ok(username.to_string())
                                 }
                                 else {
-                                    Ok("Failed".to_string())
+                                    Err(2) // Err 2: ChangeRole request failure
                                 }
                             }
-                            Err(err) => {
-                                println!("{:?}", err);
-                                Ok("Error".to_string())
+                            Err(_) => {
+                                Err(3) // Err 3: ChangeRole no response
                             }
                         }
-                        // Ok(text)
                     }
-                    Err(_) => Ok("Empty".to_string()),
+                    Err(_) => Err(4), // Err 4: Login no response
                 }
             } else {
-                Ok("Error".to_string())
+                Err(5) // Err 5: login url fail to respond
             }
         }
-        Err(_) => Ok("Error".to_string()),
+        Err(_) => Err(6), // Err 6: fail to send request to login url
     }
 }
 
 #[tauri::command]
 fn logout(state: tauri::State<Session>) {
     state.clear_cookies();
-    println!("cookies: {:#?}", state.cookies);
 }
 
 fn main() {
