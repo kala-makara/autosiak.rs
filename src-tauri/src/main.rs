@@ -15,6 +15,7 @@ use tauri::Manager;
 const BASE_URL: &str = "https://academic.ui.ac.id/main";
 const LOGIN_URL: &str = formatcp!("{}/Authentication/Index", BASE_URL);
 const CHANGEROLE_URL: &str = formatcp!("{}/Authentication/ChangeRole", BASE_URL);
+const COURSEPLANEDIT_URL: &str = formatcp!("{}/CoursePlan/CoursePlanEdit", BASE_URL);
 // const SCHEDULE_URL: &str = formatcp!("{}/Schedule/Index", BASE_URL);
 // const SUMMARY_URL: &str = formatcp!("{}Authentication/Summary", BASE_URL);
 
@@ -118,6 +119,21 @@ async fn main_login_handler(
 #[tauri::command]
 fn logout(state: tauri::State<Session>) {
     state.clear_cookies();
+}
+
+async fn scraper(state: &tauri::State<'_, Session>) -> Result<i32, i32> {
+    match state.client.get(COURSEPLANEDIT_URL).send().await {
+        Ok(res) => {
+            if res.status().is_success() {
+                println!("CPE: {:#?}", res); // NOTE: debug response of course plan edit
+                Ok(0)
+            }
+            else {
+                Err(0)
+            }
+        },
+        Err(_) => Err(1)
+    }
 }
 
 fn main() {
