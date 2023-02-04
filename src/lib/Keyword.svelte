@@ -1,6 +1,10 @@
 <script lang="ts">
+    const MTKL = 200; // max total keywords length
+
     let query_list: string[] = [];
     let new_query = '';
+
+    $: total_keywords_length = query_list.join('').length;
 
     function add() {
         query_list = [...query_list, new_query.trim()];
@@ -24,8 +28,8 @@
         <div class="flex flex-wrap">
             <form>
                 <div class="flex rounded-full bg-slate-400 p-1 w-60 items-center mr-2">
-                    <input class="w-3/4 rounded-l-full rounded-r-xl px-2 mr-1" placeholder="Insert queries here..." bind:value={new_query}>
-                    <button class="w-16 bg-blue-500 hover:bg-blue-600 rounded-r-full rounded-l-xl font-bold text-gray-200 disabled:opacity-50" on:click={add} disabled={new_query === ''}>+</button>
+                    <input class="w-3/4 rounded-l-full rounded-r-xl px-2 mr-1" placeholder={total_keywords_length > MTKL?`Max ${MTKL} letters!`:'Insert queries here...'} bind:value={new_query} disabled={total_keywords_length > MTKL}>
+                    <button class="w-16 bg-blue-500 hover:bg-blue-600 rounded-r-full rounded-l-xl font-bold text-gray-200 disabled:opacity-50" on:click={add} disabled={new_query === '' ||total_keywords_length > MTKL}>+</button>
                 </div>
             </form>
             <!-- TODO: or not: the wraps act funny here -->
@@ -38,4 +42,5 @@
             <button class="flex rounded-full mr-2 bg-red-500 hover:bg-red-600 disabled:hover:bg-red-500 text-gray-200 font-semibold px-2 items-center py-1 mb-2 disabled:opacity-50" disabled={query_list.length === 0} on:click={clear}>Clear</button>
         </div>
     </div>
+    <p>{`class: ${query_list.join('').length}`}</p>
 </fieldset>

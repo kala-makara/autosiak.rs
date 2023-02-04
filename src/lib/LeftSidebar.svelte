@@ -1,6 +1,5 @@
 <!-- left sidebar component -->
 <script lang="ts">
-	import { error } from '@sveltejs/kit';
 	import { invoke } from '@tauri-apps/api/tauri';
 
 	let username = '';
@@ -37,7 +36,7 @@
         is_waiting = true;
         wait_start();
 
-        await invoke('main_login_handler', {username: username, password: password})
+        await invoke('login', {username: username, password: password})
             .then((val) => {
                 console.log(`success ${val}`);
                 cached_username = username;
@@ -67,13 +66,6 @@
         cached_password = '';
         is_logged_in = false;
     }
-
-	function defer() {
-		alert(
-			'Defer mode skips credentials checking (username and password) and straight to deployment. This  will make fewer API call, which means smaller risk to get connection errors. MAKE SURE YOU USE CORRECT USERNAME AND PASSWORD OR PROGRAM WILL PANIC!\nProceed?'
-		);
-        status = "DEFER MODE"
-	}
 
     function is_cred_empty(uname: string, pword: string): boolean {
         if (uname === "" || pword === "") {
@@ -145,16 +137,6 @@
 			</button>
 		</div>
 	</form>
-    <div class="pt-2 pb-6 text-center">
-        <button
-            data-tooltip-target="tooltip-default"
-            class="bg-red-500 text-gray-200 font-medium py-2 px-4 rounded-lg hover:bg-red-600 disabled:opacity-50 disabled:hover:bg-red-500"
-            disabled='{is_cred_empty(username, password)}'
-            on:click={defer}
-        >
-            Defer
-        </button>
-    </div>
 	<div class="select-none">
 		<p class="text-center text-lg font-medium text-gray-200 py-10">Login status:</p>
         {#if is_logged_in}
