@@ -49,22 +49,22 @@
 		<div class="flex flex-row border-2 border-gray-200 rounded-lg mr-2 items-center p-1">
 			<div class="items-center mr-1 ml-1">
 				<input
-					id="checkbox-odd"
+					id="checkbox-even"
 					type="checkbox"
-					value={[1, 3, 5, 7]}
-					bind:checked={odd}
-                    on:change={handleOddChange}
+					value={[2, 4, 6, 8]}
+					bind:checked={even}
+                    on:change={handleEvenChange}
 					class="rounded border-gray-300 bg-gray-100 text-yellow-400 focus:ring-2 focus:ring-blue-500"
 				/>
 				<label for="checkbox-1" class="ml-0 text-sm font-bold text-gray-200">Odd</label>
 			</div>
 			<div class="items-center mr-1 ml-1">
 				<input
-					id="checkbox-even"
+					id="checkbox-odd"
 					type="checkbox"
-					value={[2, 4, 6, 8]}
-					bind:checked={even}
-                    on:change={handleEvenChange}
+					value={[1, 3, 5, 7]}
+					bind:checked={odd}
+                    on:change={handleOddChange}
 					class="rounded border-gray-300 bg-gray-100 text-yellow-400 focus:ring-2 focus:ring-blue-500"
 				/>
 				<label for="checkbox-1" class="ml-0 text-sm font-bold text-gray-200">Even</label>
