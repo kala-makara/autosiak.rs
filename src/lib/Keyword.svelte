@@ -1,5 +1,8 @@
 <script lang="ts">
-    const MTKL = 200; // max total keywords length
+	import { onDestroy, onMount } from "svelte";
+    import { query_store } from "./stores";
+
+    const MTKL = 100; // max total keywords length
 
     let query_list: string[] = [];
     let new_query = '';
@@ -18,6 +21,14 @@
     function clear() {
         query_list = new Array<string>();
     }
+
+    onDestroy(() => {
+        $query_store = [...query_list];
+    })
+
+    onMount(() => {
+        query_list = [...$query_store];
+    })
 </script>
 
 <fieldset>
@@ -42,5 +53,4 @@
             <button class="flex rounded-full mr-2 bg-red-500 hover:bg-red-600 disabled:hover:bg-red-500 text-gray-200 font-semibold px-2 items-center py-1 mb-2 disabled:opacity-50" disabled={query_list.length === 0} on:click={clear}>Clear</button>
         </div>
     </div>
-    <p>{`class: ${query_list.join('').length}`}</p>
 </fieldset>

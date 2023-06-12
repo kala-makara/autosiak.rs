@@ -8,15 +8,6 @@
 	let even = false;
     let terms_list: number[];
 
-    $: {
-        query_store.update(query => {
-            return {
-                ...query,
-                terms: terms_list,
-            };
-        });
-    }
-
 	function handleCheckboxChange(e: Event, index: number) {
 		checkboxes[index] = (e.target as HTMLInputElement).checked;
 		if (index % 2 === 0) {
@@ -62,7 +53,8 @@
         $terms_store.forEach((val) => {
             checkboxes[val - 1] = true;
         });
-        console.log("queries", $query_store);
+        odd = checkboxes.filter((val, idx) => {return idx % 2}).every(val => val == true);
+        even =  checkboxes.filter((val, idx) => {return idx % 2 == 0}).every(val => val == true);
     })
 </script>
 
