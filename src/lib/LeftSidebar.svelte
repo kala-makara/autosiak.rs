@@ -1,6 +1,7 @@
 <!-- left sidebar component -->
 <script lang="ts">
 	import { invoke } from '@tauri-apps/api/tauri';
+    import { login_status } from './stores';
 
 	let username = '';
 	let password = '';
@@ -25,13 +26,13 @@
     let cached_username = '';
     let cached_password = '';
 
-    let is_logged_in = false;
+    // let is_logged_in = false;
     let is_error = false;
     let is_waiting = false;
 
 	async function login() {
         status = 'Waiting';
-        is_logged_in = false;
+        $login_status = false;
         is_error = false;
         is_waiting = true;
         wait_start();
@@ -41,7 +42,7 @@
                 console.log(`success ${val}`);
                 cached_username = username;
                 cached_password = password;
-                is_logged_in = true;
+                $login_status = true;
                 status = '';
             })
             .catch((error) => {
@@ -64,7 +65,7 @@
         status = '';
         cached_username = '';
         cached_password = '';
-        is_logged_in = false;
+        $login_status = false;
     }
 
     function is_cred_empty(uname: string, pword: string): boolean {
@@ -82,21 +83,10 @@
 		Auto<span class="font-medium">SIAK</span>
 	</p>
 	<p
-		class="pb-10 
-              text-center
-              font-mono
-              text-base
-              font-thin
-              tracking-tight
-              text-gray-400 select-none"
+		class="pb-10 text-center font-mono text-base font-thin tracking-tight text-gray-400 select-none"
 	>
 		by <span
-			class="cursor-pointer
-                                               transition
-                                               ease-in-out
-                                               hover:text-yellow-400
-                                               hover:font-black
-                                               duration-250"
+			class="cursor-pointer transition ease-in-out hover:text-yellow-400 hover:font-black duration-250"
 			on:click={(_) => {
 				invoke('credit');
 			}}
@@ -139,7 +129,7 @@
 	</form>
 	<div class="select-none">
 		<p class="text-center text-lg font-medium text-gray-200 py-10">Login status:</p>
-        {#if is_logged_in}
+        {#if $login_status}
 		    <p class="text-center text-sm font-normal text-gray-200">{cached_username}</p>
         {:else if is_error}
             <p class="text-center text-sm font-semibold text-red-500">{status}</p>
@@ -153,7 +143,7 @@
         <button
             data-tooltip-target="tooltip-default"
             class="bg-red-500 text-gray-200 font-medium py-2 px-4 rounded-lg hover:bg-red-600 disabled:opacity-50 disabled:hover:bg-red-500"
-            disabled='{!is_logged_in}'
+            disabled='{!$login_status}'
             on:click={logout}
         >
             Log Out
