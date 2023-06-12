@@ -39,13 +39,14 @@
 
         await invoke('login', {username: username, password: password})
             .then((val) => {
-                console.log(`success ${val}`);
+                console.log("success");
                 cached_username = username;
                 cached_password = password;
                 $login_status = true;
                 status = '';
             })
             .catch((error) => {
+                console.log(`error: ${error}`);
                 cached_username = '';
                 cached_password = '';
                 status = `Wrong Password/Username!`
