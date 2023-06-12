@@ -1,7 +1,7 @@
 <script lang="ts">
     import { query_store } from "./stores";
 
-    const MTKL = 100; // max total keywords length
+    const max_queries_count = 100; // max total keywords length
 
     let new_query = '';
 
@@ -29,11 +29,10 @@
         <div class="flex flex-wrap">
             <form>
                 <div class="flex rounded-full bg-slate-400 p-1 w-60 items-center mr-2">
-                    <input class="w-3/4 rounded-l-full rounded-r-xl px-2 mr-1" placeholder={total_keywords_length > MTKL?`Max ${MTKL} letters!`:'Insert queries here...'} bind:value={new_query} disabled={total_keywords_length > MTKL}>
-                    <button class="w-16 bg-blue-500 hover:bg-blue-600 rounded-r-full rounded-l-xl font-bold text-gray-200 disabled:opacity-50" on:click={add} disabled={new_query === '' ||total_keywords_length > MTKL}>+</button>
+                    <input class="w-3/4 rounded-l-full rounded-r-xl px-2 mr-1" placeholder={total_keywords_length > max_queries_count?`Max ${max_queries_count} letters!`:'Insert queries here...'} bind:value={new_query} disabled={total_keywords_length > max_queries_count}>
+                    <button class="w-16 bg-blue-500 hover:bg-blue-600 rounded-r-full rounded-l-xl font-bold text-gray-200 disabled:opacity-50" on:click={add} disabled={new_query === '' ||total_keywords_length > max_queries_count}>+</button>
                 </div>
             </form>
-            <!-- TODO: or not: the wraps act funny here -->
             {#each $query_store as query}
                 <div class="flex rounded-full mr-2 bg-slate-200 px-2 items-center py-1 mb-2">
                     <p class="mr-2">{query}</p>
