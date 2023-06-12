@@ -1,5 +1,5 @@
-export type Tab = {
+export interface Tab {
     label: string,
     value: number,
     component: any,
-};
+}

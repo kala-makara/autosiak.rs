@@ -4,6 +4,9 @@
     import Setup from "./Setup.svelte";
     import Result from "./Result.svelte";
 
+    import { query_store } from "./stores";
+    import { terms_store } from "./stores";
+
     const items: Tab[] = [
         {
             label: "Setup",

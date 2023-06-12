@@ -1,7 +1,6 @@
 <script lang="ts">
-    import { query_store } from "./stores";
     import { terms_store } from "./stores";
-    import { onMount, onDestroy } from "svelte";
+    import { onMount } from "svelte";
 
 	let checkboxes = Array<boolean>(8).fill(false);
 	let odd = false;

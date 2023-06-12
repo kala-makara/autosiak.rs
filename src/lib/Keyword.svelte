@@ -1,34 +1,24 @@
 <script lang="ts">
-	import { onDestroy, onMount } from "svelte";
     import { query_store } from "./stores";
 
     const MTKL = 100; // max total keywords length
 
-    let query_list: string[] = [];
     let new_query = '';
 
-    $: total_keywords_length = query_list.join('').length;
+    $: total_keywords_length = $query_store.join('').length;
 
     function add() {
-        query_list = [...query_list, new_query.trim()];
+        $query_store = [...$query_store, new_query.trim()];
         new_query = '';
     }
 
     function remove(query: string) {
-        query_list = query_list.filter((value, index, array) => {return value !== query;});
+        $query_store = $query_store.filter((value, index, array) => {return value !== query;});
     }
 
     function clear() {
-        query_list = new Array<string>();
+        $query_store = new Array<string>();
     }
-
-    onDestroy(() => {
-        $query_store = [...query_list];
-    })
-
-    onMount(() => {
-        query_list = [...$query_store];
-    })
 </script>
 
 <fieldset>
@@ -44,13 +34,13 @@
                 </div>
             </form>
             <!-- TODO: or not: the wraps act funny here -->
-            {#each query_list as query}
+            {#each $query_store as query}
                 <div class="flex rounded-full mr-2 bg-slate-200 px-2 items-center py-1 mb-2">
                     <p class="mr-2">{query}</p>
                     <button class="rounded-full bg-red-500 hover:bg-red-600 w-8 text-gray-200 font-bold" on:click={() => {remove(query)}}> &#215;</button>
                 </div>
             {/each}
-            <button class="flex rounded-full mr-2 bg-red-500 hover:bg-red-600 disabled:hover:bg-red-500 text-gray-200 font-semibold px-2 items-center py-1 mb-2 disabled:opacity-50" disabled={query_list.length === 0} on:click={clear}>Clear</button>
+            <button class="flex rounded-full mr-2 bg-red-500 hover:bg-red-600 disabled:hover:bg-red-500 text-gray-200 font-semibold px-2 items-center py-1 mb-2 disabled:opacity-50" disabled={$query_store.length === 0} on:click={clear}>Clear</button>
         </div>
     </div>
 </fieldset>

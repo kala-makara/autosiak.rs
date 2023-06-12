@@ -12,6 +12,6 @@
     </div>
 </div>
 <hr class="py-2 px-4">
-<div class="p-2 h-5/6">
+<div class="p-2">
     <button class="bg-red-500 text-gray-200 font-medium py-2 px-4 rounded-lg hover:bg-red-600 disabled:opacity-50 disabled:hover:bg-red-500 w-full">Deploy!</button>
 </div>
