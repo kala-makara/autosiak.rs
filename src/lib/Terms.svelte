@@ -1,18 +1,22 @@
 <script lang="ts">
+    import { query_store } from "./stores";
+    import { terms_store } from "./stores";
+    import { onMount, onDestroy } from "svelte";
+
 	let checkboxes = Array<boolean>(8).fill(false);
 	let odd = false;
 	let even = false;
     let terms_list: number[];
 
     $: {
-        terms_list = new Array<number>();
-        for (let i = 0; i < 8; i++) {
-            if (checkboxes[i]) {
-                terms_list.push(i + 1);
-            }
-        }
+        query_store.update(query => {
+            return {
+                ...query,
+                terms: terms_list,
+            };
+        });
     }
-    
+
 	function handleCheckboxChange(e: Event, index: number) {
 		checkboxes[index] = (e.target as HTMLInputElement).checked;
 		if (index % 2 === 0) {
@@ -20,6 +24,7 @@
 		} else {
 			odd = checkboxes.every((checkbox, i) => (i % 2 !== 0 ? checkbox : true));
 		}
+        setTermsStore();
 	}
 
 	function handleOddChange(e: Event) {
@@ -29,6 +34,7 @@
 		} else {
 			checkboxes = checkboxes.map((checkbox, i) => (i % 2 !== 0 ? false : checkbox));
 		}
+        setTermsStore();
 	}
 
 	function handleEvenChange(e: Event) {
@@ -38,7 +44,26 @@
 		} else {
 			checkboxes = checkboxes.map((checkbox, i) => (i % 2 === 0 ? false : checkbox));
 		}
+        setTermsStore();
 	}
+
+    function setTermsStore() {
+        terms_list = new Array<number>();
+        for (let i = 0; i < 8; i++) {
+            if (checkboxes[i]) {
+                terms_list.push(i + 1);
+            }
+        }
+        terms_store.set(terms_list);
+    }
+
+    onMount(() => {
+        checkboxes = Array<boolean>(8).fill(false);
+        $terms_store.forEach((val) => {
+            checkboxes[val - 1] = true;
+        });
+        console.log("queries", $query_store);
+    })
 </script>
 
 <fieldset>
