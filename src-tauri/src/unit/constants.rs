@@ -2,6 +2,9 @@
 
 use const_format::formatcp;
 
+pub type FEResult<T> = Result<T, String>;
+pub type NullFEResult = FEResult<()>;
+
 pub const BASE_URL: &str = "https://academic.ui.ac.id/main";
 pub const LOGIN_URL: &str = formatcp!("{}/Authentication/Index", BASE_URL);
 pub const CHANGEROLE_URL: &str = formatcp!("{}/Authentication/ChangeRole", BASE_URL);

@@ -49,7 +49,7 @@
                 console.log(`error: ${error}`);
                 cached_username = '';
                 cached_password = '';
-                status = `Wrong Password/Username!`
+                status = `Login failed!`
                 is_error = true;
             })
             .finally(() => {

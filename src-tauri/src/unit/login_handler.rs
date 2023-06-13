@@ -1,14 +1,16 @@
-use reqwest::Error as ReqwestError;
-use std::{collections::HashMap, time::Duration};
 use scraper::{Html, Selector};
+use std::{collections::HashMap, time::Duration};
 
-use super::{constants::LOGIN_URL, Session};
+use super::{
+    constants::{NullFEResult, CHANGEROLE_URL, LOGIN_URL},
+    Session,
+};
 
 async fn login_unit(
     username: &str,
     password: &str,
     state: &tauri::State<'_, Session>,
-) -> Result<(), ReqwestError> {
+) -> NullFEResult {
     state.clear_cookies();
 
     let mut payload = HashMap::new();
@@ -21,32 +23,52 @@ async fn login_unit(
         .form(&payload)
         .timeout(Duration::new(5, 0))
         .send()
-        .await.map(|x| async {
-            let content = x.text().await.unwrap();
+        .await
+        .map(|x| async {
+            let content = x.text().await.map_err(|_| "failed to load login response")?;
             let document = Html::parse_document(&content);
             let meta_selector = Selector::parse("meta[http-equiv='Refresh']").unwrap();
             let refresh_meta = document.select(&meta_selector);
-            refresh_meta.count()
-        })?.await;
+            Ok::<usize, String>(refresh_meta.count())
+        })
+        .map_err(|err| err.to_string())?
+        .await?;
 
     if login_success < 1 {
-        state.client.get("[u/p]").send().await?;
+        return Err("failed to log in".to_string());
     }
 
     Ok(())
 }
 
-// TODO: ChangeRole isn't acessed yet, separate unit?
+async fn change_role_unit(state: &tauri::State<'_, Session>) -> NullFEResult {
+    let role_changed = state
+        .client
+        .get(CHANGEROLE_URL)
+        .timeout(Duration::new(5, 0))
+        .send()
+        .await
+        .map_err(|err| err.to_string())?;
+
+    let redirected = role_changed.url().path() == "/main/Welcome";
+
+    if redirected {
+        Ok(())
+    } else {
+        Err("failed to get main page".to_string())
+    }
+}
 
 #[tauri::command]
 pub async fn login(
     username: &str,
     password: &str,
     state: tauri::State<'_, Session>,
-) -> Result<(), String> {
+) -> NullFEResult {
     login_unit(username, password, &state)
         .await
-        .map_err(|err| err.to_string() )?;
+        .map(|_| async { change_role_unit(&state).await })?
+        .await?;
 
     Ok(())
 }
