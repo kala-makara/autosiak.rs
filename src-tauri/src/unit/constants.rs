@@ -1,8 +1,19 @@
 #![allow(dead_code)]
 
 use const_format::formatcp;
+use serde::Serialize;
 
-pub type FEResult<T> = Result<T, String>;
+// TODO: enumerate errors
+#[derive(Serialize)]
+pub enum FEError {
+    LoginInaccessible,
+    LoginFailed,
+    ChangeRoleFailed,
+    MainPageInaccessible,
+    OtherError(String),
+}
+
+pub type FEResult<T> = Result<T, FEError>;
 pub type NullFEResult = FEResult<()>;
 
 pub const BASE_URL: &str = "https://academic.ui.ac.id/main";

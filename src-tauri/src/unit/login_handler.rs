@@ -2,7 +2,8 @@ use scraper::{Html, Selector};
 use std::{collections::HashMap, time::Duration};
 
 use super::{
-    constants::{NullFEResult, CHANGEROLE_URL, LOGIN_URL},
+    constants::{NullFEResult, CHANGEROLE_URL, LOGIN_URL, FEError},
+    constants::FEError::*,
     Session,
 };
 
@@ -25,17 +26,17 @@ async fn login_unit(
         .send()
         .await
         .map(|x| async {
-            let content = x.text().await.map_err(|_| "failed to load login response")?;
+            let content = x.text().await.map_err(|err| OtherError(err.to_string()))?;
             let document = Html::parse_document(&content);
             let meta_selector = Selector::parse("meta[http-equiv='Refresh']").unwrap();
             let refresh_meta = document.select(&meta_selector);
-            Ok::<usize, String>(refresh_meta.count())
+            Ok::<usize, FEError>(refresh_meta.count())
         })
-        .map_err(|err| err.to_string())?
+        .map_err(|_| LoginInaccessible)?
         .await?;
 
     if login_success < 1 {
-        return Err("failed to log in".to_string());
+        return Err(LoginFailed);
     }
 
     Ok(())
@@ -48,14 +49,14 @@ async fn change_role_unit(state: &tauri::State<'_, Session>) -> NullFEResult {
         .timeout(Duration::new(5, 0))
         .send()
         .await
-        .map_err(|err| err.to_string())?;
+        .map_err(|_| ChangeRoleFailed)?;
 
-    let redirected = role_changed.url().path() == "/main/Welcome";
+    let redirected = role_changed.url().path() == "/main/Welcome/";
 
     if redirected {
         Ok(())
     } else {
-        Err("failed to get main page".to_string())
+        Err(MainPageInaccessible)
     }
 }
 
