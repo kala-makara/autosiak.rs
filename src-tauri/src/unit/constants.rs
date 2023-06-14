@@ -4,11 +4,15 @@ use const_format::formatcp;
 use serde::Serialize;
 
 // TODO: enumerate errors
-#[derive(Serialize)]
+#[derive(Debug, Serialize)]
 pub enum FEError {
-    LoginInaccessible,
-    LoginFailed,
     ChangeRoleFailed,
+    CourseEditInaccessible,
+    CourseEditLoadError,
+    CourseEditParseError,
+    LoginFailed,
+    LoginInaccessible,
+    LoginLoadError,
     MainPageInaccessible,
     OtherError(String),
 }

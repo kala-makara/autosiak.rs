@@ -2,8 +2,8 @@ use scraper::{Html, Selector};
 use std::{collections::HashMap, time::Duration};
 
 use super::{
-    constants::{NullFEResult, CHANGEROLE_URL, LOGIN_URL, FEError},
     constants::FEError::*,
+    constants::{FEError, NullFEResult, CHANGEROLE_URL, LOGIN_URL},
     Session,
 };
 
@@ -25,14 +25,16 @@ async fn login_unit(
         .timeout(Duration::new(5, 0))
         .send()
         .await
+        .map_err(|_| LoginInaccessible)
         .map(|x| async {
-            let content = x.text().await.map_err(|err| OtherError(err.to_string()))?;
+            let content = x.text().await.map_err(|_| LoginLoadError)?;
+
             let document = Html::parse_document(&content);
             let meta_selector = Selector::parse("meta[http-equiv='Refresh']").unwrap();
+
             let refresh_meta = document.select(&meta_selector);
             Ok::<usize, FEError>(refresh_meta.count())
-        })
-        .map_err(|_| LoginInaccessible)?
+        })?
         .await?;
 
     if login_success < 1 {
